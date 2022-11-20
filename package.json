@@ -1,0 +1,24 @@
+{
+  "name": "games-tournament-assistant",
+  "version": "1.0.0",
+  "description": "Games tournament assistant",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tropik42/Games-tournament-assistant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tropik42/Games-tournament-assistant/issues"
+  },
+  "homepage": "https://github.com/Tropik42/Games-tournament-assistant#readme",
+  "dependencies": {
+    "axios": "^1.1.3"
+  }
+}
