@@ -1,17 +1,22 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
-const { stdin: input, stdout: output } = require('process');
+const {stdin: input, stdout: output} = require('process');
 
-const rl = readline.createInterface({ input, output });
+const rl = readline.createInterface({input, output});
 
-rl.question('What do you think of Node.js? ', (answer) => {
-    // TODO: Log the answer in a database
-    console.log(
-        `Thank you for your valuable feedback: ${answer}`
-    );
+// Задать вопросик
+function ask(question) {
+    return new Promise((resolve, reject) => {
+        rl.question(question, (answer) => {
+            resolve(answer);
+            rl.close();
 
-    rl.close();
-});
+            return answer;
+        });
+    });
+}
 
 // если профиль скрыт, нужно выводить информацию о том что скрыт
 async function getDotabuffPlayerInfo() {
@@ -48,12 +53,6 @@ function steamIdToAccountId(steamId)
 }
 
 async function getWinRate(accountId) {
-    // const data = await axios.get(
-    //     'https://api.opendota.com/api/players/115668866/wl',
-    //     {
-    //         headers: {'X-Requested-With': 'XMLHttpRequest'}
-    //     }
-    // );
     const config = {
         method: 'get',
         url: 'https://api.opendota.com/api/players/115668866/wl',
@@ -67,16 +66,31 @@ async function getWinRate(accountId) {
 }
 
 async function process() {
-    // const answer = await rl.question('What is your favorite food? ');
-    // console.log(`Oh, so your favorite food is ${answer}`);
+    // console.log('Привет, Лера!')
+    const filePath = await ask('Введи абсолютный путь к файлу с участниками: ')
+    const file = fs.readFileSync(path.resolve(filePath.replace(/"/g, '')), 'utf-8');
 
-    const {steamId, winRate} = await getDotabuffPlayerInfo();
-    if (steamId === 'hidden') {
-        console.log('Профиль скрыт')
+    const commands = file.split('dota2')
+    // console.log('commands', commands);
+    const desktopFilePath = path.resolve('C:\\Users\\Tropik\\Desktop', `index.txt`)
+    fs.writeFileSync(desktopFilePath,
+        `Предложенное решение: \r\n`
+    )
+    for (let i = 0; i < commands.length; i++) {
+        console.log(commands[i])
+        fs.appendFileSync( // вставить описание метода
+            path.resolve(desktopFilePath),
+            commands[i]
+        )
     }
-    const accountId = steamIdToAccountId(steamId);
-    console.log('accountId', accountId);
-    console.log('winRate', winRate)
+
+    // const {steamId, winRate} = await getDotabuffPlayerInfo();
+    // if (steamId === 'hidden') {
+    //     console.log('Профиль скрыт')
+    // }
+    // const accountId = steamIdToAccountId(steamId);
+    // console.log('accountId', accountId);
+    // console.log('winRate', winRate)
 }
 
 process().catch();
