@@ -19,8 +19,8 @@ function ask(question) {
 }
 
 // если профиль скрыт, нужно выводить информацию о том что скрыт
-async function getDotabuffPlayerInfo() {
-    const {data} = await axios.get('https://ru.dotabuff.com/players/115668866');
+async function getDotabuffPlayerInfo(link) {
+    const {data} = await axios.get(link);
     if (data.includes('Этот профиль скрыт')) {
         return 'hidden';
     }
@@ -65,32 +65,57 @@ async function getWinRate(accountId) {
     console.log('winRate', winRate.toFixed(2))
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function process() {
     // console.log('Привет, Лера!')
     const filePath = await ask('Введи абсолютный путь к файлу с участниками: ')
     const file = fs.readFileSync(path.resolve(filePath.replace(/"/g, '')), 'utf-8');
 
-    const commands = file.split('dota2')
-    // console.log('commands', commands);
+    const teams = file.split('dota2').filter(el => el !== '')
+    console.log('teams', teams);
     const desktopFilePath = path.resolve('C:\\Users\\Tropik\\Desktop', `index.txt`)
-    fs.writeFileSync(desktopFilePath,
-        `Предложенное решение: \r\n`
-    )
-    for (let i = 0; i < commands.length; i++) {
-        console.log(commands[i])
-        fs.appendFileSync( // вставить описание метода
-            path.resolve(desktopFilePath),
-            commands[i]
-        )
-    }
 
-    // const {steamId, winRate} = await getDotabuffPlayerInfo();
-    // if (steamId === 'hidden') {
-    //     console.log('Профиль скрыт')
-    // }
-    // const accountId = steamIdToAccountId(steamId);
-    // console.log('accountId', accountId);
-    // console.log('winRate', winRate)
+    fs.writeFileSync(desktopFilePath, `Результат такой: \r\n`)
+
+    for (let i = 0; i < teams.length; i++) {
+        const team = teams[i]
+        console.log('team', team)
+
+        const teamSplit = team.split('Состав');
+        console.log('teamSplit', teamSplit)
+
+        fs.appendFileSync(
+            path.resolve(desktopFilePath),
+            `\r\n ${teamSplit[0]}`
+        )
+
+        const teamComposition = teamSplit[1].split('@').filter(el => el.includes('https://')).map(el => el.replace(/\r\n/g, ''))
+        console.log('teamComposition', teamComposition)
+
+        for (let i = 0; i < teamComposition.length; i++) {
+            const player = teamComposition[i];
+            console.log('player', player);
+
+            const linkRaw = player.split('https');
+            console.log('linkRaw', linkRaw);
+            const link = `https${linkRaw[linkRaw.length - 1].replace('www', 'ru')}`;
+            console.log('link', link);
+
+            await sleep(500);
+
+            const {steamId, winRate} = await getDotabuffPlayerInfo(link);
+
+            fs.appendFileSync(
+                path.resolve(desktopFilePath),
+                `${player}, winRate: ${winRate} \r\n`
+            )
+
+            console.log(steamId, winRate)
+        }
+    }
 }
 
 process().catch();
