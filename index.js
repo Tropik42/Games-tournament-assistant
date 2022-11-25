@@ -49,18 +49,18 @@ function steamIdToAccountId(steamId)
     return (Z * 2) + Y;
 }
 
-async function getWinRate(accountId) {
-    const config = {
-        method: 'get',
-        url: 'https://api.opendota.com/api/players/115668866/wl',
-        headers: {
-            'Authorization': 'Bearer 28991bf3-a5d7-4a8d-8f19-794c5948feb7'
-        },
-    };
-    const {data: {win, lose}} = await axios(config)
-    const winRate = (win * 100) / (win + lose)
-    console.log('winRate', winRate.toFixed(2))
-}
+// async function getWinRate(accountId) {
+//     const config = {
+//         method: 'get',
+//         url: 'https://api.opendota.com/api/players/115668866/wl',
+//         headers: {
+//             'Authorization': 'Bearer 28991bf3-a5d7-4a8d-8f19-794c5948feb7'
+//         },
+//     };
+//     const {data: {win, lose}} = await axios(config)
+//     const winRate = (win * 100) / (win + lose)
+//     console.log('winRate', winRate.toFixed(2))
+// }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -68,12 +68,23 @@ function sleep(ms) {
 
 async function process() {
     // console.log('Привет, Лера!')
-    const filePath = await ask('Введи абсолютный путь к файлу с участниками: ')
-    const file = fs.readFileSync(path.resolve(filePath.replace(/"/g, '')), 'utf-8');
+    const filePathRaw = await ask('Введи абсолютный путь к файлу с участниками: ')
+    const filePath = filePathRaw.replace(/"/g, '')
+
+    const test = filePath.split('\\')
+    console.log('test', test)
+
+    const test2 = filePath.replace(`\\${test[test.length-1]}`, '\\')
+    console.log('test2', test2)
+
+    const file = fs.readFileSync(path.resolve(filePath), 'utf-8');
 
     const teams = file.split('dota2').filter(el => el !== '')
     console.log('teams', teams);
-    const desktopFilePath = path.resolve('C:\\Users\\Tropik\\Desktop', `index.txt`)
+
+
+    const desktopFilePath = path.resolve(test2, `index.txt`)
+    // const desktopFilePath = path.resolve(filePath, `index.txt`)
 
     fs.writeFileSync(desktopFilePath, `Результат такой: \r\n`)
 
