@@ -21,9 +21,6 @@ function ask(question) {
 // если профиль скрыт, нужно выводить информацию о том что скрыт
 async function getDotabuffPlayerInfo(link) {
     const {data} = await axios.get(link);
-    if (data.includes('Этот профиль скрыт')) {
-        return 'hidden';
-    }
 
     // console.log(data)
 
@@ -35,7 +32,7 @@ async function getDotabuffPlayerInfo(link) {
     // получить винрейт
     const winRateIndex = data.indexOf('<dt>Доля побед</dt>', 0);
     const rawWinRate = data.slice(winRateIndex - 15, winRateIndex);
-    const winRate = rawWinRate.replace(/.{0,6}>/, '').replace(/%<.*/, '');
+    const winRate = data.includes('Этот профиль скрыт') ? 'Профиль скрыт' : rawWinRate.replace(/.{0,6}>/, '').replace(/%<.*/, '');
 
     return {steamId, winRate}
 }
