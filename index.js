@@ -71,47 +71,61 @@ async function process() {
     const filePathRaw = await ask('Введи абсолютный путь к файлу с участниками: ')
     const filePath = filePathRaw.replace(/"/g, '')
 
+    // Разбить путь на составные части
     const test = filePath.split('\\')
     console.log('test', test)
 
+    // Получить путь к рабочему столу
     const test2 = filePath.replace(`\\${test[test.length-1]}`, '\\')
     console.log('test2', test2)
 
+    // Получить данные из файла с участниками
     const file = fs.readFileSync(path.resolve(filePath), 'utf-8');
 
+    // Создать массив с командами
     const teams = file.split('dota2').filter(el => el !== '')
     console.log('teams', teams);
 
-
+    // Создать путь для файла с конечной информацией
     const desktopFilePath = path.resolve(test2, `index.txt`)
     // const desktopFilePath = path.resolve(filePath, `index.txt`)
 
+    // Создать файл с конечной информацией
     fs.writeFileSync(desktopFilePath, `Результат такой: \r\n`)
 
     for (let i = 0; i < teams.length; i++) {
+        // Взять команду
         const team = teams[i]
         console.log('team', team)
 
+        // Отделить список участников от информации о команде
         const teamSplit = team.split('Состав');
         console.log('teamSplit', teamSplit)
 
+        // Записать в файл информацию о команде
         fs.appendFileSync(
             path.resolve(desktopFilePath),
             `\r\n ${teamSplit[0]}`
         )
 
+        // Получить массив с учатниками (оставить те строки, где есть https и убрать \r\n)
         const teamComposition = teamSplit[1].split('@').filter(el => el.includes('https://')).map(el => el.replace(/\r\n/g, ''))
         console.log('teamComposition', teamComposition)
 
         for (let i = 0; i < teamComposition.length; i++) {
+            //Получить участника
             const player = teamComposition[i];
             console.log('player', player);
 
+            // Отделить ФИО и ник от ссылки на дотабаф
             const linkRaw = player.split('https');
             console.log('linkRaw', linkRaw);
+
+            // Получить ссылку на дотабаф участника и где надо заменить www на ru
             const link = `https${linkRaw[linkRaw.length - 1].replace('www', 'ru')}`;
             console.log('link', link);
 
+            // Ожидание между запросами
             await sleep(500);
 
             const {steamId, winRate} = await getDotabuffPlayerInfo(link);
