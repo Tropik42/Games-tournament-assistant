@@ -26,12 +26,16 @@ async function getDotabuffPlayerInfo(link) {
 
     // const test = HTMLParser.valid(data)
     const test = HTMLParser.parse(data)
-    // const section = test.getElementsByTagName('tbody')
     const section = test.querySelectorAll('tr')
 
-    const testSection = HTMLParser.parse(section)
-    console.log(testSection.childNodes)
-    console.log(testSection.structuredText)
+    const testSection = HTMLParser
+        .parse(section)
+        .structuredText
+        .split(',')
+        .map(el => el.match(/\d{4}-\d{2}-\d{2}/g))
+        .filter(el => el !== null)
+        .map(el => el[0])
+    // console.dir(testSection.childNodes, {depth: null})
 
 
     // получить steamId
@@ -77,7 +81,6 @@ function sleep(ms) {
 }
 
 // async function process() {
-//     // console.log('Привет, Лера!')
 //     const filePathRaw = await ask('Введи абсолютный путь к файлу с участниками: ')
 //     const filePath = filePathRaw.replace(/"/g, '')
 //
