@@ -23,7 +23,6 @@ async function getDotabuffPlayerInfo(link) {
     const {data} = await axios.get(link);
     // console.log(data)
 
-
     // получить steamId
     const steamIdIndex = data.indexOf('STEAM_');
     const rawSteamId = data.slice(steamIdIndex, steamIdIndex + 30);
@@ -33,6 +32,17 @@ async function getDotabuffPlayerInfo(link) {
     const winRateIndex = data.indexOf('<dt>Доля побед</dt>', 0);
     const rawWinRate = data.slice(winRateIndex - 15, winRateIndex);
     const winRate = data.includes('Этот профиль скрыт') ? 'Профиль скрыт' : rawWinRate.replace(/.{0,6}>/, '').replace(/%<.*/, '');
+
+    // получить таблицу активности
+    const activityInfoListIndexStart = data.indexOf('player-activity-wrapper');
+    const activityInfoListIndexEnd = data.indexOf('portable-show-player-friends-achievements-phone');
+    console.log('activityInfoListIndexStart', activityInfoListIndexStart)
+    console.log('activityInfoListIndexEnd', activityInfoListIndexEnd)
+    const rawActivityList = data
+        .slice(activityInfoListIndexStart, activityInfoListIndexEnd)
+        .replace('player-activity-wrapper">', '')
+        .replace('<div class=\'year-chart\'><div class=\'col labels\'><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>', '')
+    console.log('rawActivityList', rawActivityList)
 
     return {steamId, winRate}
 }
@@ -103,8 +113,8 @@ async function process() {
     console.log('teams', teams);
 
     // Создать путь для файла с конечной информацией
-    const desktopFilePath = path.resolve(test2, `index.txt`)
-    // const desktopFilePath = path.resolve(filePath, `index.txt`)
+    // const desktopFilePath = path.resolve(test2, `index.txt`)
+    const desktopFilePath = path.resolve(desktopPath, `index.txt`)
 
     // Создать файл с конечной информацией
     fs.writeFileSync(desktopFilePath, `Результат такой: \r\n`)
@@ -128,34 +138,34 @@ async function process() {
         const teamComposition = teamSplit[1].split('@').filter(el => el.includes('https://')).map(el => el.replace(/\r\n/g, ''))
         console.log('teamComposition', teamComposition)
 
-        for (let i = 0; i < teamComposition.length; i++) {
-            //Получить участника
-            const player = teamComposition[i];
-            console.log('player', player);
-
-            // Отделить ФИО и ник от ссылки на дотабаф
-            const linkRaw = player.split('https');
-            console.log('linkRaw', linkRaw);
-
-            // Получить ссылку на дотабаф участника и где надо заменить www на ru
-            const link = `https${linkRaw[linkRaw.length - 1].replace('www', 'ru')}`;
-            console.log('link', link);
-
-            // Ожидание между запросами
-            await sleep(500);
-
-            const {steamId, winRate} = await getDotabuffPlayerInfo(link);
-
-            fs.appendFileSync(
-                path.resolve(desktopFilePath),
-                `${player}, winRate: ${winRate} \r\n`
-            )
-
-            console.log(steamId, winRate)
-        }
+        // for (let i = 0; i < teamComposition.length; i++) {
+        //     //Получить участника
+        //     const player = teamComposition[i];
+        //     console.log('player', player);
+        //
+        //     // Отделить ФИО и ник от ссылки на дотабаф
+        //     const linkRaw = player.split('https');
+        //     console.log('linkRaw', linkRaw);
+        //
+        //     // Получить ссылку на дотабаф участника и где надо заменить www на ru
+        //     const link = `https${linkRaw[linkRaw.length - 1].replace('www', 'ru')}`;
+        //     console.log('link', link);
+        //
+        //     // Ожидание между запросами
+        //     await sleep(500);
+        //
+        //     const {steamId, winRate} = await getDotabuffPlayerInfo(link);
+        //
+        //     fs.appendFileSync(
+        //         path.resolve(desktopFilePath),
+        //         `${player}, winRate: ${winRate} \r\n`
+        //     )
+        //
+        //     console.log(steamId, winRate)
+        // }
     }
 }
 
-process().catch();
+// process().catch();
 
-getDotabuffPlayerInfo('https://www.dotabuff.com/players/72312627/matches').catch()
+getDotabuffPlayerInfo('https://www.dotabuff.com/players/70388657').catch()
