@@ -1,5 +1,4 @@
 const axios = require('axios');
-const HTMLParser = require('node-html-parser');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -23,19 +22,6 @@ function ask(question) {
 async function getDotabuffPlayerInfo(link) {
     const {data} = await axios.get(link);
     // console.log(data)
-
-    // const test = HTMLParser.valid(data)
-    const test = HTMLParser.parse(data)
-    const section = test.querySelectorAll('tr')
-
-    const testSection = HTMLParser
-        .parse(section)
-        .structuredText
-        .split(',')
-        .map(el => el.match(/\d{4}-\d{2}-\d{2}/g))
-        .filter(el => el !== null)
-        .map(el => el[0])
-    // console.dir(testSection.childNodes, {depth: null})
 
 
     // получить steamId
@@ -80,79 +66,96 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// async function process() {
-//     const filePathRaw = await ask('Введи абсолютный путь к файлу с участниками: ')
-//     const filePath = filePathRaw.replace(/"/g, '')
-//
-//     // Разбить путь на составные части
-//     const test = filePath.split('\\')
-//     console.log('test', test)
-//
-//     // Получить путь к рабочему столу
-//     const test2 = filePath.replace(`\\${test[test.length-1]}`, '\\')
-//     console.log('test2', test2)
-//
-//     // Получить данные из файла с участниками
-//     const file = fs.readFileSync(path.resolve(filePath), 'utf-8');
-//
-//     // Создать массив с командами
-//     const teams = file.split('dota2').filter(el => el !== '')
-//     console.log('teams', teams);
-//
-//     // Создать путь для файла с конечной информацией
-//     const desktopFilePath = path.resolve(test2, `index.txt`)
-//     // const desktopFilePath = path.resolve(filePath, `index.txt`)
-//
-//     // Создать файл с конечной информацией
-//     fs.writeFileSync(desktopFilePath, `Результат такой: \r\n`)
-//
-//     for (let i = 0; i < teams.length; i++) {
-//         // Взять команду
-//         const team = teams[i]
-//         console.log('team', team)
-//
-//         // Отделить список участников от информации о команде
-//         const teamSplit = team.split('Состав');
-//         console.log('teamSplit', teamSplit)
-//
-//         // Записать в файл информацию о команде
-//         fs.appendFileSync(
-//             path.resolve(desktopFilePath),
-//             `\r\n ${teamSplit[0]}`
-//         )
-//
-//         // Получить массив с участниками (оставить те строки, где есть https и убрать \r\n)
-//         const teamComposition = teamSplit[1].split('@').filter(el => el.includes('https://')).map(el => el.replace(/\r\n/g, ''))
-//         console.log('teamComposition', teamComposition)
-//
-//         for (let i = 0; i < teamComposition.length; i++) {
-//             //Получить участника
-//             const player = teamComposition[i];
-//             console.log('player', player);
-//
-//             // Отделить ФИО и ник от ссылки на дотабаф
-//             const linkRaw = player.split('https');
-//             console.log('linkRaw', linkRaw);
-//
-//             // Получить ссылку на дотабаф участника и где надо заменить www на ru
-//             const link = `https${linkRaw[linkRaw.length - 1].replace('www', 'ru')}`;
-//             console.log('link', link);
-//
-//             // Ожидание между запросами
-//             await sleep(500);
-//
-//             const {steamId, winRate} = await getDotabuffPlayerInfo(link);
-//
-//             fs.appendFileSync(
-//                 path.resolve(desktopFilePath),
-//                 `${player}, winRate: ${winRate} \r\n`
-//             )
-//
-//             console.log(steamId, winRate)
-//         }
-//     }
-// }
+async function process() {
+    const filePathRaw = await ask('Введи абсолютный путь к файлу с участниками: ')
+    let filePath = filePathRaw.replace(/"/g, '')
+    console.log('filePath', filePath)
 
-// process().catch();
+    // Разбить путь на составные части
+    const splitFilePath = filePath.split('\\')
+    console.log('splitFilePath', splitFilePath)
+
+    // Последний элемент пути к файлу
+    let lastPathElement = splitFilePath[splitFilePath.length - 1];
+
+    if (lastPathElement === 'Desktop') {
+        throw new Error('Не хватает названия файла, последний эелемент пути - "Desktop"')
+    }
+
+    console.log('lastPathElement', lastPathElement)
+
+    if (!lastPathElement.includes('.txt')) {
+        filePath = `${filePath}.txt`
+        lastPathElement = `${lastPathElement}.txt`
+    }
+
+    console.log('filePath', filePath)
+
+    // Получить путь к рабочему столу
+    const desktopPath = filePath.replace(`\\${lastPathElement}`, '\\')
+    console.log('desktopPath', desktopPath)
+
+    // Получить данные из файла с участниками
+    const file = fs.readFileSync(path.resolve(filePath), 'utf-8');
+
+    // Создать массив с командами
+    const teams = file.split('dota2').filter(el => el !== '')
+    console.log('teams', teams);
+
+    // Создать путь для файла с конечной информацией
+    const desktopFilePath = path.resolve(test2, `index.txt`)
+    // const desktopFilePath = path.resolve(filePath, `index.txt`)
+
+    // Создать файл с конечной информацией
+    fs.writeFileSync(desktopFilePath, `Результат такой: \r\n`)
+
+    for (let i = 0; i < teams.length; i++) {
+        // Взять команду
+        const team = teams[i]
+        console.log('team', team)
+
+        // Отделить список участников от информации о команде
+        const teamSplit = team.split('Состав');
+        console.log('teamSplit', teamSplit)
+
+        // Записать в файл информацию о команде
+        fs.appendFileSync(
+            path.resolve(desktopFilePath),
+            `\r\n ${teamSplit[0]}`
+        )
+
+        // Получить массив с участниками (оставить те строки, где есть https и убрать \r\n)
+        const teamComposition = teamSplit[1].split('@').filter(el => el.includes('https://')).map(el => el.replace(/\r\n/g, ''))
+        console.log('teamComposition', teamComposition)
+
+        for (let i = 0; i < teamComposition.length; i++) {
+            //Получить участника
+            const player = teamComposition[i];
+            console.log('player', player);
+
+            // Отделить ФИО и ник от ссылки на дотабаф
+            const linkRaw = player.split('https');
+            console.log('linkRaw', linkRaw);
+
+            // Получить ссылку на дотабаф участника и где надо заменить www на ru
+            const link = `https${linkRaw[linkRaw.length - 1].replace('www', 'ru')}`;
+            console.log('link', link);
+
+            // Ожидание между запросами
+            await sleep(500);
+
+            const {steamId, winRate} = await getDotabuffPlayerInfo(link);
+
+            fs.appendFileSync(
+                path.resolve(desktopFilePath),
+                `${player}, winRate: ${winRate} \r\n`
+            )
+
+            console.log(steamId, winRate)
+        }
+    }
+}
+
+process().catch();
 
 getDotabuffPlayerInfo('https://www.dotabuff.com/players/72312627/matches').catch()
