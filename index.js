@@ -21,7 +21,7 @@ function ask(question) {
 // если профиль скрыт, нужно выводить информацию о том что скрыт
 async function getDotabuffPlayerInfo(link) {
     const {data} = await axios.get(link);
-    // console.log(data)
+    console.log(data)
 
     // получить steamId
     const steamIdIndex = data.indexOf('STEAM_');
@@ -36,13 +36,32 @@ async function getDotabuffPlayerInfo(link) {
     // получить таблицу активности
     const activityInfoListIndexStart = data.indexOf('player-activity-wrapper');
     const activityInfoListIndexEnd = data.indexOf('portable-show-player-friends-achievements-phone');
-    console.log('activityInfoListIndexStart', activityInfoListIndexStart)
-    console.log('activityInfoListIndexEnd', activityInfoListIndexEnd)
+    // console.log('activityInfoListIndexStart', activityInfoListIndexStart)
+    // console.log('activityInfoListIndexEnd', activityInfoListIndexEnd)
     const rawActivityList = data
         .slice(activityInfoListIndexStart, activityInfoListIndexEnd)
         .replace('player-activity-wrapper">', '')
         .replace('<div class=\'year-chart\'><div class=\'col labels\'><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>', '')
-    console.log('rawActivityList', rawActivityList)
+        .replace('<div class=\'col\'>', '')
+    // console.log('rawActivityList', rawActivityList)
+
+    const rawDays = rawActivityList
+        .split('<div class="day')
+        .filter(el => (el !== ''))
+        .filter(el => (el !== ' blank"></div>'))
+
+    console.log(rawDays)
+
+    let days = []
+
+    for (const rawDay of rawDays) {
+        const day = rawDay.match(/<h3>(\d{4}-\d{2}-\d{2})<\/h3>/)[1]
+        const matchesCount = rawDay.match(/ matches-(\d{1,2})/)[1]
+
+        days.push({day, matchesCount})
+    }
+
+    console.log(days)
 
     return {steamId, winRate}
 }
