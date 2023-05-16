@@ -53,15 +53,37 @@ async function getDotabuffPlayerInfo(link) {
     console.log(rawDays)
 
     let days = []
+    let previousActivityDayIsZero = false
+    let gap = 0
+    let maxGap = 0
 
     for (const rawDay of rawDays) {
         const day = rawDay.match(/<h3>(\d{4}-\d{2}-\d{2})<\/h3>/)[1]
-        const matchesCount = rawDay.match(/ matches-(\d{1,2})/)[1]
+        const matchesCount = +rawDay.match(/ matches-(\d{1,2})/)[1]
+
+        if (matchesCount !== 0) {
+            previousActivityDayIsZero = false
+            gap = 0
+        }
+
+        if (matchesCount === 0 && previousActivityDayIsZero === true) {
+            gap++
+
+            if (maxGap <= gap) {
+                maxGap = gap
+            }
+        }
+
+        if (matchesCount === 0 && previousActivityDayIsZero === false) {
+            gap++
+            previousActivityDayIsZero = true
+        }
 
         days.push({day, matchesCount})
     }
 
     console.log(days)
+    console.log(`Дней подряд без игр: ${maxGap}`)
 
     return {steamId, winRate}
 }
