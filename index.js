@@ -57,6 +57,7 @@ async function getDotabuffPlayerInfo(link) {
     let gap = 0
     let maxGap = 0
 
+    // собрать массив из дат и количества матчей в день
     for (const rawDay of rawDays) {
         const day = rawDay.match(/<h3>(\d{4}-\d{2}-\d{2})<\/h3>/)[1]
         const matchesCount = +rawDay.match(/ matches-(\d{1,2})/)[1]
